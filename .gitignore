@@ -1,0 +1,5 @@
+dist
+node_modules
+
+# Ignore yarn.lock, as we have few dependencies, and I don't want a different .gitignore and .npmignore file
+yarn.lock
