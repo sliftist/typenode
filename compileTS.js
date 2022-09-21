@@ -74,9 +74,7 @@ compileTransform(function compileTS(contents, curPath) {
         },
         sourceMaps: compilerOptions.inlineSourceMap ? "inline" : undefined,
         inlineSourcesContent: compilerOptions.inlineSources,
-        // NOTE: In devtools, for nodejs, there are duplicate files. I'm not sure how to avoid this, HOWEVER,
-        //  by removing the extension from the name the typescript file shows up first, so it avoids a lot of the issue.
-        sourceFileName: curPath.split("/").slice(-1)[0].split(".").slice(0, -1).join("."),
+        sourceFileName: curPath.split("/").slice(-1)[0],
         outputPath: curPath,
     };
 

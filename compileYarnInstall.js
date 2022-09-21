@@ -24,6 +24,8 @@ function versionMatch(version, request) {
 function doesVersionMatch(version, requestVersion, allowNotExists) {
     if (version.startsWith("file:")) return true;
     if (requestVersion.startsWith("file:")) return true;
+    if (requestVersion.slice(1, 3) === ":/") return true;
+    if (requestVersion.slice(1, 3) === ":\\") return true;
 
     if (requestVersion.startsWith("?")) {
         return doesVersionMatch(version, requestVersion.slice(1), true);
