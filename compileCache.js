@@ -65,6 +65,8 @@ function updateContentsWithContents(module, contents) {
     let realPath = module.filename;
     let curPath = module.filename;
 
+    // "\r" messes up swc sourcemaps
+    contents = contents.replaceAll("\r\n", "\n");
     module.sourceSHA256 = sha256(contents);
 
     let applyTransforms = handledExtensions.some(x => realPath.endsWith(x));

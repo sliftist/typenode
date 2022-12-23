@@ -1,8 +1,12 @@
 import * as swc from "@swc/core";
 import debugbreak from "debugbreak";
 
-import * as preact from "preact";
+/*
+multiline comments break sourcemaps with swc
+*/
 
-let x = <div />;
-
-console.log("test");
+main();
+function main() {
+    debugbreak(1);
+    debugger;
+}
