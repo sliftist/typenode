@@ -36,6 +36,7 @@ function doesVersionMatch(version, requestVersion, allowNotExists) {
     if (requestVersion === "*") return true;
 
     if (requestVersion.startsWith("http")) return true;
+    if (requestVersion.startsWith("git+")) return true;
 
     // TODO: Range matches
     // if (requestVersion.includes("-")) return true;
