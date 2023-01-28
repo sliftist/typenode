@@ -5,12 +5,16 @@ require.extensions[".ts"] = require.extensions[".tsx"] = require.extensions[".js
 
 const { compileTransform } = require("./compileCache");
 const fs = require("fs");
+const path = require("path");
 
 compileTransform(function compileTS(contents, curPath) {
 
     let compileAsTypescript = curPath.endsWith(".ts") || curPath.endsWith(".tsx");
 
     if (!compileAsTypescript) return contents;
+
+    // ONLY load typescript if we have to. Otherwise, we take a huge load penalty for no reason.
+    const typescript = require("typescript");
 
     // The default config, which we probably won't need to use
     let tsconfig = {
@@ -22,8 +26,7 @@ compileTransform(function compileTS(contents, curPath) {
         }
     };
 
-    // Check all parents for tsconfigs
-
+    // Check all parent directories for tsconfigs
     let pathParts = curPath.replace(/\\/g, "/").split("/");
     for (let i = pathParts.length - 1; i >= 1; i--) {
         let parentFolder = pathParts.slice(0, i).join("/");
@@ -36,93 +39,31 @@ compileTransform(function compileTS(contents, curPath) {
         if (tsconfigText.includes(`"extends":`)) {
             continue;
         }
-        //let { config, error } = typescript.parseConfigFileTextToJson(configTextPath, tsconfigText);
-        // TODO: I believe SWC has something that does this?
-        // NOTE: Eval isn't unsafe, we are evaluating the code anyway, so anything which injects code into
-        //  the tsconfig.json file could just inject code into the .ts file and save a step!
-        let config = eval("(" + tsconfigText + ")");
+        let { config, error } = typescript.parseConfigFileTextToJson(configTextPath, tsconfigText);
         tsconfig = config;
         break;
     }
 
     tsconfig.compilerOptions = tsconfig.compilerOptions || {};
+    const compileOptions = tsconfig.compilerOptions;
+    compileOptions.sourceMap = false;
+    compileOptions.inlineSourceMap = true;
+    compileOptions.inlineSources = true;
+    tsconfig.fileName = tsconfig.moduleName = path.basename(curPath);
 
     // Default the jsx settings based on the extension.
     if (curPath.endsWith(".ts")) {
-        tsconfig.compilerOptions.jsx = undefined;
+        compileOptions.jsx = typescript.JsxEmit.None;
     } else if (curPath.endsWith(".tsx")) {
         if (
-            tsconfig.compilerOptions.jsx === undefined
-            || tsconfig.compilerOptions.jsx === 0
+            compileOptions.jsx === undefined
+            || compileOptions.jsx === typescript.JsxEmit.None
         ) {
-            tsconfig.compilerOptions.jsx = "react";
+            compileOptions.jsx = typescript.JsxEmit.React;
         }
     }
 
-    let compilerOptions = tsconfig.compilerOptions;
-
-    // TODO: Map all config options
-    //  Something like: https://github.com/TypeStrong/ts-node/blob/main/src/transpilers/swc.ts
-    let swcConfig = {
-        jsc: {
-            target: compilerOptions.target,
-            parser: {
-                syntax: "typescript",
-                decorators: compilerOptions.experimentalDecorators,
-                tsx: compilerOptions.jsx === "react",
-            }
-        },
-        sourceMaps: compilerOptions.inlineSourceMap ? "inline" : undefined,
-        inlineSourcesContent: compilerOptions.inlineSources,
-        sourceFileName: curPath.split("/").slice(-1)[0],
-        outputPath: curPath,
-    };
-
-    if (compilerOptions.module) {
-        swcConfig.module = {
-            type: compilerOptions.module.toLowerCase(),
-        };
-    }
-    swcConfig.jsc.transform = {};
-    swcConfig.jsc.transform.react = {};
-    let reactConfig = swcConfig.jsc.transform.react;
-    reactConfig.runtime = "classic";
-    reactConfig.pragma = compilerOptions.jsxFactory;
-    reactConfig.pragmaFrag = compilerOptions.jsxFragmentFactory;
-
-
-    const swc = require("@swc/core");
-
-    let result = swc.transformSync(contents, swcConfig);
-    outputText = result.code;
-
-    // // Strip the existing sourceMappingURL
-    // {
-    //     const prefix = `//# ` + `sourceMappingURL=`;
-    //     let index = outputText.indexOf(prefix);
-    //     if (index >= 0 && (outputText[index - 1] === "\r" || outputText[index - 1] === "\n")) {
-    //         let endIndex = outputText.indexOf("\n", index);
-    //         if (endIndex < 0) {
-    //             endIndex = outputText.length;
-    //         }
-    //         outputText = outputText.slice(0, index) + outputText.slice(endIndex);
-    //     }
-    // }
-
-    // let sourceMapObj = JSON.parse(sourceMapText);
-    // sourceMapObj.file = path.basename(curPath);
-    // sourceMapObj.sources = [sourceMapObj.file];
-    // sourceMapObj.sourcesContent = [contents];
-
-    // if (inlineSourceMaps) {
-    //     let sourceMapBase64 = Buffer.from(JSON.stringify(sourceMapObj)).toString("base64");
-    //     outputText += `\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,${sourceMapBase64}\n`;
-    // } else {
-    //     let mapPath = cachePath + ".map";
-    //     atomicWrite(mapPath, JSON.stringify(sourceMapObj));
-    //     outputText += `\n//# sourceMappingURL=${mapPath}`;
-    // }
-    // outputText += `\n// transpileTime = ${transpileTime}ms`;
+    let { outputText, sourceMapText } = typescript.transpileModule(contents, tsconfig);
 
     return outputText;
 });
