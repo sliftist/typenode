@@ -6,7 +6,7 @@ if (existingModule) {
 module.TYPENODE_INSTALL = true;
 
 /**
- * Typescript transpilation (using SWC)
+ * Typescript transpilation
  *      - Adds a filesystem cache
  *          - Mostly useful for debugging transpilation, but also makes builds faster
  *      - Automatically yarn installs if needed (some of the time)
@@ -50,6 +50,6 @@ require("./compileTS");
 require("./compileDirFlags");
 require("./compileRecordModuleRequires");
 
-const { compileTransform, compileTransformBefore } = require("./compileCache");
+const { compileTransform, compileTransformBefore, forceTransformModule } = require("./compileCache");
 
-module.exports = { compileTransform, compileTransformBefore };
+module.exports = { compileTransform, compileTransformBefore, forceTransformModule };

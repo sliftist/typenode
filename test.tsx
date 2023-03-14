@@ -1,17 +1,4 @@
-import debugbreak from "debugbreak";
-import { test } from "./other";
-/*
-multiline comments break sourcemaps with swc
-wtf
-*/
-
-test();
-
-main();
-function main() {
-    debugbreak(1);
-    debugger;
-    throw new Error("source maps");
-    console.log("hi");
-    debugger;
-}
+import { forceTransformPackage } from "./compileFixESMTS";
+forceTransformPackage("ol");
+import * as ol from "ol";
+console.log(ol);

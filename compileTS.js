@@ -2,14 +2,19 @@
 
 // Allow .ts and .tsx extensions
 require.extensions[".ts"] = require.extensions[".tsx"] = require.extensions[".js"];
+require.extensions[".cjs"] = require.extensions[".mjs"] = require.extensions[".js"];
 
 const { compileTransform } = require("./compileCache");
 const fs = require("fs");
 const path = require("path");
+const { isTransformedPackage } = require("./compileFixESM");
 
 compileTransform(function compileTS(contents, curPath) {
+    let compileAsTypescript = curPath.endsWith(".ts") || curPath.endsWith(".tsx") || curPath.endsWith(".mjs");
 
-    let compileAsTypescript = curPath.endsWith(".ts") || curPath.endsWith(".tsx");
+    if (isTransformedPackage(curPath)) {
+        compileAsTypescript = true;
+    }
 
     if (!compileAsTypescript) return contents;
 
@@ -26,6 +31,8 @@ compileTransform(function compileTS(contents, curPath) {
         }
     };
 
+    let packageJsonObj = {};
+
     // Check all parent directories for tsconfigs
     let pathParts = curPath.replace(/\\/g, "/").split("/");
     for (let i = pathParts.length - 1; i >= 1; i--) {
@@ -35,6 +42,11 @@ compileTransform(function compileTS(contents, curPath) {
         try {
             tsconfigText = fs.readFileSync(configTextPath).toString();
         } catch { continue; }
+        let packageJsonPath = parentFolder + "/package.json";
+        try {
+            let packageJsonText = fs.readFileSync(packageJsonPath).toString();
+            packageJsonObj = JSON.parse(packageJsonText);
+        } catch { }
         // TODO: Support extends. Probably just by calling the correct typescript.parse function?
         if (tsconfigText.includes(`"extends":`)) {
             continue;
@@ -44,12 +56,21 @@ compileTransform(function compileTS(contents, curPath) {
         break;
     }
 
+    // HACK: Try to replace module syntax.
+    //  TODO: Use AST parsing to do this more safely
+    if (packageJsonObj.type === "module") {
+        contents = contents.replaceAll("import.meta.url", JSON.stringify(curPath));
+    }
+
     tsconfig.compilerOptions = tsconfig.compilerOptions || {};
     const compileOptions = tsconfig.compilerOptions;
     compileOptions.sourceMap = false;
     compileOptions.inlineSourceMap = true;
     compileOptions.inlineSources = true;
     tsconfig.fileName = tsconfig.moduleName = path.basename(curPath);
+
+    // ALWAYS commonjs, so we can import modulejs files correctly.
+    tsconfig.compilerOptions.module = "commonjs";
 
     // Default the jsx settings based on the extension.
     if (curPath.endsWith(".ts")) {

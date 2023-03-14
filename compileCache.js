@@ -2,10 +2,7 @@
  *      and then caches that result.
  */
 
-// TODO: Actually check if files are our files (in our .git repo, but not in a dist
-//  or node_modules folder), and only handle those files. And then... also handle .js,
-//  as it should work fine, and if it is only our repo it shouldn't slow things down by much.
-const handledExtensions = [".ts", ".tsx", ".less", ".css"];
+const handledExtensions = [".ts", ".tsx", ".less", ".css", ".mjs"];
 
 
 const Module = eval("require")("module");
@@ -16,6 +13,7 @@ const path = require("path");
 const crypto = require("crypto");
 
 const { atomicWrite, atomicRead } = require("./atomicIO");
+const { isTransformedPackage } = require("./compileFixESM");
 
 function sha256(contents) {
     return crypto.createHash("sha256").update(contents).digest("hex");
@@ -63,19 +61,23 @@ function updateContents() {
 }
 function updateContentsWithContents(module, contents) {
     let realPath = module.filename;
+    realPath = realPath.replace(/\\/g, "/");
     let curPath = module.filename;
 
     // "\r" messes up swc sourcemaps
     contents = contents.replaceAll("\r\n", "\n");
     module.sourceSHA256 = sha256(contents);
 
+    let moduleFileName = "";
+    if (realPath.includes("/node_modules/")) {
+        moduleFileName = realPath.split("/node_modules/")[1].split("/")[0];
+    }
+
     let applyTransforms = handledExtensions.some(x => realPath.endsWith(x));
-    /** HACK: Needed for preact, as we want to use unminified, but their unminified code uses
-     *      .mjs with a .js extension, and I can't figure out how to force nodejs to
-     *      treat it as .mjs, so... we just treat it like .ts
-    */
-    if (realPath.replace(/\\/g, "/").includes("node_modules/preact")) {
+    if (isTransformedPackage(moduleFileName)) {
         applyTransforms = true;
+        // Force a .tsx extension, so it is compiled as typescript
+        realPath = realPath.split(".").slice(0, -1).join(".") + ".tsx";
     }
     if (applyTransforms) {
         let cachedContents = undefined;
