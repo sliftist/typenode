@@ -10,22 +10,20 @@ if (typeof window === "undefined") {
     forceTransformed.add("preact-event-hook-fork");
     module.exports.forceTransformPackage = function forceTransformPackage(name) {
         forceTransformed.add(name);
+        forceChangePackageJson(name);
     };
-    function getPackageName(id) {
-        return (id || "").replace(/\\/g, "/").split("/node_modules/")[1]?.split("/")[0] || id;
+    function getPackageName(idOrPath) {
+        return (idOrPath || "").replace(/\\/g, "/").split("/node_modules/")[1]?.split("/")[0] || idOrPath;
     }
     function isTransformedPackage(id) {
-        const packageName = getPackageName(id);
-        return forceTransformed.has(packageName);
+        return forceTransformed.has(getPackageName(id));
     }
     module.exports.isTransformedPackage = isTransformedPackage;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const base = Module.prototype.load;
-    Module.prototype.load = function () {
-        if (isTransformedPackage(this.id)) {
-            let packageName = getPackageName(this.id);
-            let packageJsonGuess = (this.id || "").replace(/\\/g, "/").split("/node_modules/")[0] + "/node_modules/" + packageName + "/package.json";
+    function forceChangePackageJson(id) {
+        let packageName = getPackageName(id);
+        for (let path of module.paths) {
+            let packageJsonGuess = path + "/" + packageName + "/package.json";
             if (fs.existsSync(packageJsonGuess)) {
                 try {
                     let packageJSON = JSON.parse(fs.readFileSync(packageJsonGuess, "utf8"));
@@ -36,8 +34,7 @@ if (typeof window === "undefined") {
                 } catch { }
             }
         }
-        return base.apply(this, arguments);
-    };
+    }
 } else {
     module.exports.forceTransformPackage = function forceTransformPackage(name) {
 
