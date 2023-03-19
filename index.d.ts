@@ -9,6 +9,7 @@ export function compileTransformBefore(callback: CompileCallback): void;
 declare global {
     namespace NodeJS {
         interface Module {
+            /** `crypto.createHash("sha256").update(contents).digest("hex")` */
             sourceSHA256?: string;
             moduleContents?: string;
             /** Just updates the contents, without actually re-evaluating the module.

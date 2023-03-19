@@ -46,7 +46,6 @@ function getCacheFileLocation(filePath) {
 }
 
 
-
 let compileTransformCallbacks = [];
 module.exports.compileTransform = function (callback) {
     compileTransformCallbacks.push(callback);
@@ -80,6 +79,16 @@ function updateContentsWithContents(module, contents) {
         realPath = realPath.split(".").slice(0, -1).join(".") + ".tsx";
     }
     if (applyTransforms) {
+        // Handle default imports so we can import like `import preact from "preact"`
+        //  (which is valid if allowSyntheticDefaultImports is set in tsconfig.json),
+        //  and the import will work fine. This syntax is a bit easier to right, and
+        //  you they can always set allowSyntheticDefaultImports to find all cases that use it,
+        //  and remove those.
+        module.__importStar = x => x;
+        module.__importDefault = x => x.default ? x : { default: x };
+        // Allow any code using the default typescript "__importDefault" implementation
+        //  to work correctly with our exports.
+        module.exports.default = module.exports;
         let cachedContents = undefined;
 
         let cachePath = undefined;
