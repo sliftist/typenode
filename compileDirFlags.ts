@@ -45,7 +45,13 @@ Module.prototype.load = function (this: NodeJS.Module) {
         for (let i = 1; i <= dirParts.length; i++) {
             Object.assign(flags, getFlagsForDir(dirParts.slice(0, i).join("/")));
         }
-        Object.assign(this, flags);
+        for (let key in flags) {
+            let value = flags[key];
+            // NOTE: Don't set flags which are EXPLICITLY set to false
+            if ((this as any)[key] !== false) {
+                (this as any)[key] = value;
+            }
+        }
     }
 
     return result;

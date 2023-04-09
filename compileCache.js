@@ -55,6 +55,15 @@ module.exports.compileTransformBefore = function (callback) {
 };
 
 function updateContents() {
+    try {
+        let stats = fs.statSync(this.filename);
+        if (stats.isDirectory()) {
+            console.warn(`Skipping reloading contents, the file appears to be a directory now ${this.filename}`);
+        }
+    } catch {
+        console.warn(`Skipping reloading contents, the file cannot be found ${this.filename}`);
+        return;
+    }
     let contents = fs.readFileSync(this.filename).toString();
     updateContentsWithContents(this, contents);
 }
@@ -96,6 +105,7 @@ function updateContentsWithContents(module, contents) {
         if (module.filename.endsWith(".less")) {
             cachingEnabled = false;
         }
+        let inputHash = "";
         if (cachingEnabled) {
             const compileTransformHash = (
                 JSON.stringify(
@@ -107,14 +117,7 @@ function updateContentsWithContents(module, contents) {
                 )
             );
 
-            let hash = sha256(JSON.stringify({ contents, compileTransformHash }));
-            // NOTE: Add it to the .ts, so we it appears when debugging, which is more correct.
-            // Is a variable, as typescript removes comments sometimes (such as if they are beside an unused import).
-            if ([".tsx", ".ts"].some(x => realPath.endsWith(x))) {
-                contents += `\nexport const _JS_SOURCE_HASH = "${hash}";`;
-            } else {
-                contents += `\n /* _JS_SOURCE_HASH = "${hash}"; */`;
-            }
+            let inputHash = sha256(JSON.stringify({ contents, compileTransformHash }));
             cachePath = getCacheFileLocation(curPath);
 
             try {
@@ -123,7 +126,7 @@ function updateContentsWithContents(module, contents) {
 
             // If the .ts file contains the hash to begin with, the hash would change,
             //  so this actually shouldn't be able to be wrong without a hash collision.
-            if (cachedContents && !cachedContents.includes(hash)) {
+            if (cachedContents && !cachedContents.includes(inputHash)) {
                 cachedContents = undefined;
             }
         }
@@ -136,6 +139,7 @@ function updateContentsWithContents(module, contents) {
             }
 
             if (cachePath) {
+                contents += `\n /* _JS_SOURCE_HASH = "${inputHash}"; */`;
                 atomicWrite(cachePath, contents);
             }
         }
