@@ -2,7 +2,7 @@
  *      and then caches that result.
  */
 
-const handledExtensions = [".ts", ".tsx", ".less", ".css", ".mjs"];
+const handledExtensions = [".ts", ".tsx", ".less", ".mjs"];
 
 
 const Module = eval("require")("module");
