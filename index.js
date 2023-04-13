@@ -5,6 +5,12 @@ if (existingModule) {
 }
 module.TYPENODE_INSTALL = true;
 
+// Increase the pitiful initial limit, which isn't nearly enough to
+//  debug our huge stack traces.
+if (Error.stackTraceLimit < 20) {
+    Error.stackTraceLimit = 20;
+}
+
 /**
  * Typescript transpilation
  *      - Adds a filesystem cache
