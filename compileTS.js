@@ -86,5 +86,13 @@ compileTransform(function compileTS(contents, curPath) {
 
     let { outputText, sourceMapText } = typescript.transpileModule(contents, tsconfig);
 
+    outputText = outputText.replaceAll("\r\n", "\n");
+    // HACK: Only use the default module if it exists, not just if it is an esModule. This seems to be how the type
+    //  system works, so... it is how the code should run at runtime.
+    outputText = outputText.replaceAll(
+        `    return (mod && mod.__esModule) ? mod : { "default": mod };\n`,
+        `    return (mod && mod.__esModule && mod.default) ? mod : { "default": mod };\n`
+    );
+
     return outputText;
 });
