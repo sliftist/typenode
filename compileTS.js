@@ -94,5 +94,21 @@ compileTransform(function compileTS(contents, curPath) {
         `    return (mod && mod.__esModule && mod.default) ? mod : { "default": mod };\n`
     );
 
+    // NOTE: It looks like "inlineSourceMap" and "inlineSources" work fine, so we can just use those. If we set sourceMap = true,
+    //      and those to false, the code below will inline source maps.
+    // Add sourcemap
+    // {
+    //     // Strip the existing sourceMappingURL
+    //     outputText = outputText.replaceAll(/\/\/# sourceMappingURL=.*/g, "");
+
+    //     let sourceMapObj = JSON.parse(sourceMapText);
+    //     sourceMapObj.file = curPath;
+    //     sourceMapObj.sources = [sourceMapObj.file];
+    //     sourceMapObj.sourcesContent = [contents];
+
+    //     let sourceMapBase64 = Buffer.from(JSON.stringify(sourceMapObj)).toString("base64");
+    //     outputText += `\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,${sourceMapBase64}\n`;
+    // }
+
     return outputText;
 });

@@ -1,13 +1,13 @@
 {
     "name": "typenode",
-    "version": "4.9.4-j",
+    "version": "5.3.3",
     "main": "index.js",
     "author": "<sliftist@gmail.com>",
     "license": "MIT",
     "dependencies": {
         "@types/pegjs": "^0.10.3",
         "source-map-support": "https://github.com/7rulnik/node-source-map-support",
-        "typescript": "^4.9.4"
+        "typescript": "5.3.3"
     },
     "devDependencies": {
         "antlr4": "^4.12.0",
