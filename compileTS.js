@@ -103,7 +103,7 @@ compileTransform(function compileTS(contents, curPath) {
             let nextEndLine = outputText.indexOf("\n", esModuleStart + 10);
             if (nextExportIndex < nextEndLine) {
                 // This line sets all exports to undefined. This causes massive issues with hotreloading, so... let's remove it.
-                outputText = outputText.slice(0, nextExportIndex) + outputText.slice(nextEndLine);
+                outputText = outputText.slice(0, nextExportIndex) + "//" + outputText.slice(nextExportIndex);
             }
         }
     }
