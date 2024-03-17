@@ -94,6 +94,20 @@ compileTransform(function compileTS(contents, curPath) {
         `    return (mod && mod.__esModule && mod.default) ? mod : { "default": mod };\n`
     );
 
+    {
+        let tag = `Object.defineProperty(exports, "__esModule", { value: true });`;
+        let esModuleStart = outputText.indexOf(tag);
+        if (0 < esModuleStart && esModuleStart < 1000) {
+            esModuleStart += tag.length;
+            let nextExportIndex = outputText.indexOf("exports.", esModuleStart);
+            let nextEndLine = outputText.indexOf("\n", esModuleStart + 10);
+            if (nextExportIndex < nextEndLine) {
+                // This line sets all exports to undefined. This causes massive issues with hotreloading, so... let's remove it.
+                outputText = outputText.slice(0, nextExportIndex) + outputText.slice(nextEndLine);
+            }
+        }
+    }
+
     // NOTE: It looks like "inlineSourceMap" and "inlineSources" work fine, so we can just use those. If we set sourceMap = true,
     //      and those to false, the code below will inline source maps.
     // Add sourcemap

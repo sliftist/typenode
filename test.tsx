@@ -1,4 +1,6 @@
-import { forceTransformPackage } from "./compileFixESMTS";
-forceTransformPackage("ol");
-import * as ol from "ol";
-console.log(ol);
+import x from "x";
+x;
+import { binarySearchIndex, compare, insertIntoSortedList, removeFromSortedList } from "socket-function/src/misc";
+export { binarySearchIndex, compare, insertIntoSortedList, removeFromSortedList };
+import { y } from "y";
+export { y };
