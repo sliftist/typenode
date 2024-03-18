@@ -108,6 +108,22 @@ compileTransform(function compileTS(contents, curPath) {
         }
     }
 
+    // Update all `Object.defineProperty(exports, ...` to set configurable: true, so hot reloading works
+    {
+        let tag = `Object.defineProperty(exports, "`;
+        let index = outputText.length - 1;
+        while (true) {
+            let tagStartIndex = outputText.lastIndexOf(tag, index);
+            if (tagStartIndex === -1) break;
+            index = tagStartIndex - 1;
+            let endIndex = outputText.indexOf(`});\n`, tagStartIndex);
+            if (endIndex === -1) break;
+            let line = outputText.slice(tagStartIndex, endIndex);
+            if (line.includes("configurable")) continue;
+            outputText = outputText.slice(0, endIndex) + ", configurable: true" + outputText.slice(endIndex);
+        }
+    }
+
     // NOTE: It looks like "inlineSourceMap" and "inlineSources" work fine, so we can just use those. If we set sourceMap = true,
     //      and those to false, the code below will inline source maps.
     // Add sourcemap
