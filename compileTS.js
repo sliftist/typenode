@@ -110,7 +110,7 @@ compileTransform(function compileTS(contents, curPath) {
 
     // Update all `Object.defineProperty(exports, ...` to set configurable: true, so hot reloading works
     {
-        let tag = `Object.defineProperty(exports, "`;
+        let tag = `\nObject.defineProperty(exports, "`;
         let index = outputText.length - 1;
         while (true) {
             let tagStartIndex = outputText.lastIndexOf(tag, index);
