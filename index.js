@@ -46,6 +46,8 @@ const Module = require("module");
 //  last).
 require("./compileYarnInstall");
 
+// NOTE: NO LONGER using source-map-support, as it doesn't seem to fix stack traces, and...
+//  it will clobber the error with it's own error if it can't parse the sourcemap.
 // NOTE: source-map-support says NodeJS support source-maps, and therefore it is not
 //  required. But... NodeJS's support seems to be poor, and doesn't work with our sourcemaps
 //  (which might be due to the .ts extension, or just how we transform our files).
@@ -53,9 +55,9 @@ require("./compileYarnInstall");
 //      some issues with the underlying "source-map" library.
 //      - https://github.com/onigoetz/node-source-map-support also works, both use very
 //          commonly used replacements for "source-map"
-require("source-map-support").install({
-    hookRequire: true,
-});
+// require("source-map-support").install({
+//     hookRequire: true,
+// });
 
 
 require("./compileTS");
