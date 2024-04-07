@@ -146,6 +146,7 @@ function updateContentsWithContents(module, contents) {
     }
 
     module.moduleContents = contents;
+    module.size = contents.length;
 }
 
 const g = new Function("return this");

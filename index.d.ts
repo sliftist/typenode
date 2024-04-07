@@ -28,6 +28,7 @@ declare global {
              *      - Maybe there is another function we are supposed to use?
              */
             load(filename: string): void;
+            size?: number;
         }
     }
 }
