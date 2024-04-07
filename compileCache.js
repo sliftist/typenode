@@ -147,6 +147,7 @@ function updateContentsWithContents(module, contents) {
 
     module.moduleContents = contents;
     module.size = contents.length;
+    module.version = (module.version || 0) + 1;
 }
 
 const g = new Function("return this");

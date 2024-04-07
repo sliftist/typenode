@@ -29,6 +29,9 @@ declare global {
              */
             load(filename: string): void;
             size?: number;
+
+            /** Incremented every time we the contents are updated (which may or may not be followed by re-evaluating the contents) */
+            version?: number;
         }
     }
 }
