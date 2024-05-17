@@ -15,6 +15,7 @@ let nextSeqNum = 1;
 
 const random = Date.now() + "." + Math.random();
 
+// NOTE: While atomic, this code can still fail (due to the file being locked by another process).
 module.exports.atomicWrite = function atomicWrite(path, contents) {
     let tries = 0;
     while (true) {
@@ -26,6 +27,11 @@ module.exports.atomicWrite = function atomicWrite(path, contents) {
         } catch (e) {
             fs.unlinkSync(tmpPath);
             if (tries++ > 10) {
+                let currentFile = fs.readFileSync(path);
+                if (currentFile.toString() === contents.toString()) {
+                    // I guess someone else wrote it? Odd, but... probably fine?
+                    return;
+                }
                 throw e;
             }
         }

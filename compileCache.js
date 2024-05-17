@@ -117,7 +117,7 @@ function updateContentsWithContents(module, contents) {
                 )
             );
 
-            let inputHash = sha256(JSON.stringify({ contents, compileTransformHash }));
+            inputHash = sha256(JSON.stringify({ contents, compileTransformHash }));
             cachePath = getCacheFileLocation(curPath);
 
             try {
