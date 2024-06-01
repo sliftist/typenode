@@ -171,6 +171,8 @@ const _compile = Module.prototype._compile = function (contents, curPath) {
     updateContentsWithContents(this, contents);
 
     this.evalStartTime = nextTime();
+    // Reset evalEndTime, for hot reloading.
+    this.evalEndTime = undefined;
     try {
         return baseCompile.call(this, this.moduleContents, curPath);
     } finally {
