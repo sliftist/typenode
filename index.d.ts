@@ -32,6 +32,10 @@ declare global {
 
             /** Incremented every time we the contents are updated (which may or may not be followed by re-evaluating the contents) */
             version?: number;
+
+            // Times are both unique (two modules evaluated at the same Date.now() will have different values).
+            evalStartTime?: number;
+            evalEndTime?: number;
         }
     }
 }

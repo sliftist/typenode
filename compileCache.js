@@ -19,6 +19,18 @@ function sha256(contents) {
     return crypto.createHash("sha256").update(contents).digest("hex");
 }
 
+let lastTime = 0;
+function nextTime() {
+    let time = Date.now();
+    if (time <= lastTime) {
+        // NOTE: We SHOULD really add epsilon, but... this is a lot easier, and is close enough,
+        //  as times will never have too large of a magnitude.
+        time = lastTime + 0.01;
+    }
+    lastTime = time;
+    return time;
+}
+
 function ensureFolder(folderPath) {
     if (!fs.existsSync(folderPath)) {
         ensureFolder(path.dirname(folderPath));
@@ -158,7 +170,12 @@ const _compile = Module.prototype._compile = function (contents, curPath) {
 
     updateContentsWithContents(this, contents);
 
-    return baseCompile.call(this, this.moduleContents, curPath);
+    this.evalStartTime = nextTime();
+    try {
+        return baseCompile.call(this, this.moduleContents, curPath);
+    } finally {
+        this.evalEndTime = nextTime();
+    }
 
     // Random text to force a compile cache update (due to changing side-effects
     //  that aren't track in a hash): 2
