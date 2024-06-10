@@ -11,6 +11,7 @@ export const forceModule = true;
 const base = Module.prototype.require;
 Module.prototype.require = function (this: NodeJS.Module, request: string) {
     this.requires = this.requires || {};
+    this.asyncRequires = this.asyncRequires || {}
     if (this.evalEndTime && !this.requires[request]) {
         this.asyncRequires[request] = true;
     }
