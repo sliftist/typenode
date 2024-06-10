@@ -17,10 +17,15 @@ declare global {
             */
             updateContents?(): void;
 
-            // requires is useful to eliminate the need for clientside traversing of pacakge.json files,
-            //  allowing it to match requests with modules (as long as the same request has been made serverside).
-            // request => resolved path
+            /** requires is useful to eliminate the need for clientside traversing of pacakge.json files,
+                allowing it to match requests with modules (as long as the same request has been made serverside).
+                    request => resolved path
+            */
             requires: { [request: string]: string };
+            /** Indicates if a request was made AFTER the initial synchronous module evaluation (and
+             *      not made during the initial synchronous module evaluation, as a request may have occured multiple times).
+             */
+            asyncRequires: { [request: string]: true };
 
             /** Modules DO have a .load function, this isn't new? Pretty sure they've
              *      had them forever too. If they lose them... well... a lot of our
