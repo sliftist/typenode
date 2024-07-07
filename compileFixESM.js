@@ -36,7 +36,6 @@ if (typeof window === "undefined") {
         }
     }
 } else {
-    module.exports.forceTransformPackage = function forceTransformPackage(name) {
-
-    };
+    module.exports.forceTransformPackage = function forceTransformPackage(name) { };
+    module.exports.isTransformedPackage = function isTransformedPackage(id) { };
 }
