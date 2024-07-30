@@ -5,6 +5,9 @@ if (existingModule) {
 }
 module.TYPENODE_INSTALL = true;
 
+Symbol.dispose = Symbol.dispose || Symbol("dispose");
+Symbol.asyncDispose = Symbol.asyncDispose || Symbol("asyncDispose");
+
 // Increase the pitiful initial limit, which isn't nearly enough to
 //  debug our huge stack traces.
 if (Error.stackTraceLimit < 20) {
