@@ -8,10 +8,12 @@ const path = require("path");
 
 const child_process = require("child_process");
 
-
 function getVersionParts(version) {
     if (version === "") return [];
-    return version.split(".").slice(0, 3).map(x => x);
+    return version
+        .split(".")
+        .slice(0, 3)
+        .map((x) => x);
 }
 function versionMatch(version, request) {
     for (let i = 0; i < Math.max(version.length, request.length); i++) {
@@ -50,36 +52,28 @@ function doesVersionMatch(version, requestVersion, allowNotExists) {
     if (requestVersion.startsWith(".")) return true;
 
     if (requestVersion.startsWith("~")) {
-        return versionMatch(
-            getVersionParts(version).slice(0, 2),
-            getVersionParts(requestVersion.slice(1)).slice(0, 2)
-        );
+        return versionMatch(getVersionParts(version).slice(0, 2), getVersionParts(requestVersion.slice(1)).slice(0, 2));
     }
     if (requestVersion.startsWith("^")) {
-        return versionMatch(
-            getVersionParts(version).slice(0, 1),
-            getVersionParts(requestVersion.slice(1)).slice(0, 1)
-        );
+        return versionMatch(getVersionParts(version).slice(0, 1), getVersionParts(requestVersion.slice(1)).slice(0, 1));
     }
 
-    return versionMatch(
-        getVersionParts(version).slice(0, 3),
-        getVersionParts(requestVersion).slice(0, 3)
-    );
+    return versionMatch(getVersionParts(version).slice(0, 3), getVersionParts(requestVersion).slice(0, 3));
 }
 
 const Module = eval("require")("module");
 const base = Module._resolveFilename;
 Module._resolveFilename = resolveFilename;
 
+let installedOnce = false;
+
 function resolveFilename() {
     let request = arguments[0];
     let parentModule = arguments[1];
     request = request.replace(/\\/g, "/");
 
-    if (parentModule && !request.startsWith(".") && !process.argv.includes("--noinstall")) {
+    if (!installedOnce && parentModule && !request.startsWith(".") && !process.argv.includes("--noinstall")) {
         // Probably a module request
-
 
         // NOTE: The correct way to do this is to concatenate the request with every search path
         //  (mostly node_modules paths), and then see if any subpaths of those match any dependendcies
@@ -104,7 +98,7 @@ function resolveFilename() {
                 if (fs.existsSync(packageJsonTestPath)) {
                     packageObj = JSON.parse(fs.readFileSync(packageJsonTestPath).toString());
                 }
-            } catch { }
+            } catch {}
             if (!packageObj) continue;
             for (let dependencyObj of [
                 packageObj.dependencies,
@@ -115,9 +109,7 @@ function resolveFilename() {
                 if (version) break;
             }
             if (version) break;
-            for (let dependencyObj of [
-                packageObj.optionalDependencies
-            ]) {
+            for (let dependencyObj of [packageObj.optionalDependencies]) {
                 if (!dependencyObj) continue;
                 version = dependencyObj[request];
                 if (version) {
@@ -130,10 +122,15 @@ function resolveFilename() {
 
         if (version && !folder.includes("node_modules")) {
             function getCurrentVersion() {
-                let installedPackageJson = folder + "/node_modules/" + request + "/package.json";
-                try {
-                    return JSON.parse(fs.readFileSync(installedPackageJson).toString()).version;
-                } catch { }
+                // SO... it might be the case we depend on it from a parent package. It depends on how yarn install
+                //  decided to install it. So... search for the actual path
+                for (let searchPath of parentModule.paths) {
+                    let packageJsonTestPath = searchPath + "/" + request + "/package.json";
+                    try {
+                        return JSON.parse(fs.readFileSync(packageJsonTestPath).toString()).version;
+                    } catch {}
+                }
+
                 // NOTE: Technically an empty string for a version is valid, but... we'll just ignore that
                 //  and make it invalid. Who just puts an empty string?
                 return "";
@@ -149,7 +146,9 @@ function resolveFilename() {
 
                 const from = parentModule?.filename || "main";
 
-                console.log(`Mismatched dependency version for ${request}. Have ${installedVersion}, want ${version}. Required from ${from}`);
+                console.log(
+                    `Mismatched dependency version for ${request}. Have ${installedVersion}, want ${version}. Required from ${from}`
+                );
                 console.log(`yarn install at ${folder}`);
 
                 console.log("--------------------------------------------------");
@@ -158,6 +157,7 @@ function resolveFilename() {
                 console.log();
 
                 child_process.execSync("yarn install", { cwd: folder, stdio: "inherit" });
+                installedOnce = true;
 
                 console.log();
                 console.log();
@@ -171,12 +171,15 @@ function resolveFilename() {
                 installedVersion = getCurrentVersion();
 
                 if (!doesVersionMatch(installedVersion, version)) {
-                    throw new Error(`Version still out of date, giving up. Want ${version}, but have ${installedVersion}, required from ${from}`);
+                    console.warn(
+                        `Tried to yarn install, but dependency version still out of date for ${JSON.stringify(
+                            request
+                        )}. Want ${version}, but have ${installedVersion}, required from ${from}`
+                    );
                 }
             }
         }
-
     }
 
     return base.apply(this, arguments);
-};
+}
