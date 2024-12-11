@@ -126,6 +126,7 @@ function resolveFilename() {
                 //  decided to install it. So... search for the actual path
                 for (let searchPath of parentModule.paths) {
                     let packageJsonTestPath = searchPath + "/" + request + "/package.json";
+                    if (!fs.existsSync(packageJsonTestPath)) continue;
                     try {
                         return JSON.parse(fs.readFileSync(packageJsonTestPath).toString()).version;
                     } catch {}
