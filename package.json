@@ -1,6 +1,6 @@
 {
     "name": "typenode",
-    "version": "5.8.0",
+    "version": "5.9.0",
     "main": "index.js",
     "author": "<sliftist@gmail.com>",
     "license": "MIT",
@@ -17,7 +17,7 @@
     },
     "scripts": {
         "type": "yarn tsc --noEmit",
-        "typenode": "node --max-old-space-size=128000 --expose-gc -r ./index.js"
+        "typenode": "node --max-old-space-size=128000 --expose-gc --enable-source-maps -r ./index.js"
     },
     "bin": {
         "typenode": "./bootstrap.js"
