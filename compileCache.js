@@ -4,7 +4,6 @@
 
 const handledExtensions = [".ts", ".tsx", ".less", ".mjs"];
 
-
 const Module = eval("require")("module");
 const fs = require("fs");
 
@@ -57,7 +56,6 @@ function getCacheFileLocation(filePath) {
     return fullPath;
 }
 
-
 let compileTransformCallbacks = [];
 module.exports.compileTransform = function (callback) {
     compileTransformCallbacks.push(callback);
@@ -84,7 +82,7 @@ function updateContentsWithContents(module, contents) {
     realPath = realPath.replace(/\\/g, "/");
     let curPath = module.filename;
 
-    // "\r" messes up swc sourcemaps
+    // "\r" messes up src sourcemaps
     contents = contents.replaceAll("\r\n", "\n");
     module.sourceSHA256 = sha256(contents);
 
@@ -93,7 +91,7 @@ function updateContentsWithContents(module, contents) {
         moduleFileName = realPath.split("/node_modules/")[1].split("/")[0];
     }
 
-    let applyTransforms = handledExtensions.some(x => realPath.endsWith(x));
+    let applyTransforms = handledExtensions.some((x) => realPath.endsWith(x));
     if (isTransformedPackage(moduleFileName)) {
         applyTransforms = true;
         // Force a .tsx extension, so it is compiled as typescript
@@ -105,8 +103,8 @@ function updateContentsWithContents(module, contents) {
         //  and the import will work fine. This syntax is a bit easier to right, and
         //  you they can always set allowSyntheticDefaultImports to find all cases that use it,
         //  and remove those.
-        module.__importStar = x => x;
-        module.__importDefault = x => x.default ? x : { default: x };
+        module.__importStar = (x) => x;
+        module.__importDefault = (x) => (x.default ? x : { default: x });
         // Allow any code using the default typescript "__importDefault" implementation
         //  to work correctly with our exports.
         module.exports.default = module.exports;
@@ -119,14 +117,12 @@ function updateContentsWithContents(module, contents) {
         }
         let inputHash = "";
         if (cachingEnabled) {
-            const compileTransformHash = (
-                JSON.stringify(
-                    []
-                        .concat(compileTransformCallbacks.map(x => ({ codeToString: x.toString(), ...x })))
-                        .concat(_compile.toString())
-                        .concat(updateContentsWithContents.toString())
-                        .concat(updateContents.toString())
-                )
+            const compileTransformHash = JSON.stringify(
+                []
+                    .concat(compileTransformCallbacks.map((x) => ({ codeToString: x.toString(), ...x })))
+                    .concat(_compile.toString())
+                    .concat(updateContentsWithContents.toString())
+                    .concat(updateContents.toString())
             );
 
             inputHash = sha256(JSON.stringify({ contents, compileTransformHash }));
@@ -134,7 +130,7 @@ function updateContentsWithContents(module, contents) {
 
             try {
                 cachedContents = atomicRead(cachePath).toString("utf8");
-            } catch { }
+            } catch {}
 
             // If the .ts file contains the hash to begin with, the hash would change,
             //  so this actually shouldn't be able to be wrong without a hash collision.
@@ -165,7 +161,7 @@ function updateContentsWithContents(module, contents) {
 const g = new Function("return this");
 
 const baseCompile = Module.prototype._compile;
-const _compile = Module.prototype._compile = function (contents, curPath) {
+const _compile = (Module.prototype._compile = function (contents, curPath) {
     this.updateContents = updateContents;
 
     updateContentsWithContents(this, contents);
@@ -181,4 +177,4 @@ const _compile = Module.prototype._compile = function (contents, curPath) {
 
     // Random text to force a compile cache update (due to changing side-effects
     //  that aren't track in a hash): 2
-};
+});
