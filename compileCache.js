@@ -2,7 +2,7 @@
  *      and then caches that result.
  */
 
-const handledExtensions = [".ts", ".tsx", ".less", ".mjs"];
+let handledExtensions = [".ts", ".tsx", ".less", ".mjs"];
 
 const Module = eval("require")("module");
 const fs = require("fs");
@@ -57,11 +57,40 @@ function getCacheFileLocation(filePath) {
 }
 
 let compileTransformCallbacks = [];
-module.exports.compileTransform = function (callback) {
-    compileTransformCallbacks.push(callback);
+
+/*
+    {
+        // Inserts as the first transform (instead of the last).
+        first?: boolean;
+        matches: RegexExp[];
+        callback: (contents, sourcePath, Module) => string;
+    }
+*/
+function compileTransform2(config) {
+    if (config.first) {
+        compileTransformCallbacks.unshift(config);
+    } else {
+        compileTransformCallbacks.push(config);
+    }
+}
+module.exports.compileTransform2 = compileTransform2;
+
+module.exports.compileTransform = function (transform) {
+    compileTransform2({
+        matches: [/./],
+        transform,
+    });
 };
-module.exports.compileTransformBefore = function (callback) {
-    compileTransformCallbacks.unshift(callback);
+module.exports.compileTransformBefore = function (transform) {
+    compileTransform2({
+        early: true,
+        matches: [/./],
+        transform,
+    });
+};
+module.exports.transformAdditionalExtensions = function (extensions) {
+    handledExtensions.push(...extensions);
+    handledExtensions = [...new Set(handledExtensions)];
 };
 
 function updateContents() {
@@ -119,7 +148,12 @@ function updateContentsWithContents(module, contents) {
         if (cachingEnabled) {
             const compileTransformHash = JSON.stringify(
                 []
-                    .concat(compileTransformCallbacks.map((x) => ({ codeToString: x.toString(), ...x })))
+                    .concat(
+                        compileTransformCallbacks.map((x) => ({
+                            codeToString: x.transform.toString(),
+                            matches: x.matches.map((x) => x.toString()),
+                        }))
+                    )
                     .concat(_compile.toString())
                     .concat(updateContentsWithContents.toString())
                     .concat(updateContents.toString())
@@ -142,7 +176,8 @@ function updateContentsWithContents(module, contents) {
         if (cachedContents !== undefined) {
             contents = cachedContents;
         } else {
-            for (let transform of compileTransformCallbacks) {
+            for (let { transform, matches } of compileTransformCallbacks) {
+                if (!matches.some((x) => x.test(realPath))) continue;
                 contents = transform(contents, realPath, module);
             }
 

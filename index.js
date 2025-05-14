@@ -1,4 +1,4 @@
-let existingModule = Object.values(require.cache).find(x => x.TYPENODE_INSTALL);
+let existingModule = Object.values(require.cache).find((x) => x.TYPENODE_INSTALL);
 if (existingModule) {
     module.exports = existingModule.exports;
     return;
@@ -62,12 +62,23 @@ require("./compileYarnInstall");
 //     hookRequire: true,
 // });
 
-
 require("./compileTS");
 
 require("./compileDirFlags");
 require("./compileRecordModuleRequires");
 
-const { compileTransform, compileTransformBefore, forceTransformModule } = require("./compileCache");
+const {
+    compileTransform,
+    compileTransform2,
+    compileTransformBefore,
+    forceTransformModule,
+    transformAdditionalExtensions,
+} = require("./compileCache");
 
-module.exports = { compileTransform, compileTransformBefore, forceTransformModule };
+module.exports = {
+    compileTransform,
+    compileTransform2,
+    compileTransformBefore,
+    forceTransformModule,
+    transformAdditionalExtensions,
+};

@@ -2,9 +2,20 @@ export interface CompileCallback {
     (contents: string, path: string, module: NodeJS.Module): string
 }
 
-export function compileTransform(callback: CompileCallback): void;
-// Inserts transform before other compilations
-export function compileTransformBefore(callback: CompileCallback): void;
+export function compileTransform2(config: {
+    // Inserts as the first transform (instead of the last).
+    early?: boolean;
+    // If one matches, then we transform this file
+    matches: RegExp[];
+    transform: CompileCallback;
+}): void;
+
+/** @deprecated Call compileTransform2 instead */
+export function compileTransform(transform: CompileCallback): void;
+/** @deprecated Call compileTransform2 instead */
+export function compileTransformBefore(transform: CompileCallback): void;
+
+export function transformAdditionalExtensions(extensions: string[]): void;
 
 declare global {
     namespace NodeJS {
