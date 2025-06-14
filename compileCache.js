@@ -88,10 +88,11 @@ module.exports.compileTransformBefore = function (transform) {
         transform,
     });
 };
-module.exports.transformAdditionalExtensions = function (extensions) {
+module.exports.addAdditionalExtensions = function (extensions) {
     handledExtensions.push(...extensions);
     handledExtensions = [...new Set(handledExtensions)];
 };
+module.exports.transformAdditionalExtensions = module.exports.addAdditionalExtensions;
 
 function updateContents() {
     try {

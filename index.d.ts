@@ -18,7 +18,7 @@ export function compileTransform(transform: CompileCallback): void;
 /** @deprecated Call compileTransform2 instead */
 export function compileTransformBefore(transform: CompileCallback): void;
 
-export function transformAdditionalExtensions(extensions: string[]): void;
+export function addAdditionalExtensions(extensions: string[]): void;
 
 declare global {
     namespace NodeJS {
