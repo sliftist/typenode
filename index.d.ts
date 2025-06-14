@@ -8,6 +8,9 @@ export function compileTransform2(config: {
     // If one matches, then we transform this file
     matches: RegExp[];
     transform: CompileCallback;
+    // Will be hashed with JSON.stringify. This can be an object
+    //  which you set later to invalidate the cache.
+    additionalCacheKey?: unknown;
 }): void;
 
 /** @deprecated Call compileTransform2 instead */

@@ -152,6 +152,7 @@ function updateContentsWithContents(module, contents) {
                         compileTransformCallbacks.map((x) => ({
                             codeToString: x.transform.toString(),
                             matches: x.matches.map((x) => x.toString()),
+                            additionalCacheKey: x.additionalCacheKey,
                         }))
                     )
                     .concat(_compile.toString())
