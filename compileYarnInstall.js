@@ -87,7 +87,7 @@ function resolveFilename() {
 
         let version;
         let folder;
-        for (let searchPath of parentModule.paths) {
+        for (let searchPath of parentModule.paths || []) {
             if (!searchPath.endsWith("node_modules")) continue;
             folder = path.dirname(searchPath);
             let packageJsonTestPath = folder + "/package.json";
@@ -98,7 +98,7 @@ function resolveFilename() {
                 if (fs.existsSync(packageJsonTestPath)) {
                     packageObj = JSON.parse(fs.readFileSync(packageJsonTestPath).toString());
                 }
-            } catch {}
+            } catch { }
             if (!packageObj) continue;
             for (let dependencyObj of [
                 packageObj.dependencies,
@@ -124,12 +124,12 @@ function resolveFilename() {
             function getCurrentVersion() {
                 // SO... it might be the case we depend on it from a parent package. It depends on how yarn install
                 //  decided to install it. So... search for the actual path
-                for (let searchPath of parentModule.paths) {
+                for (let searchPath of parentModule.paths || []) {
                     let packageJsonTestPath = searchPath + "/" + request + "/package.json";
                     if (!fs.existsSync(packageJsonTestPath)) continue;
                     try {
                         return JSON.parse(fs.readFileSync(packageJsonTestPath).toString()).version;
-                    } catch {}
+                    } catch { }
                 }
 
                 // NOTE: Technically an empty string for a version is valid, but... we'll just ignore that
