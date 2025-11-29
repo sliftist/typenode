@@ -72,7 +72,7 @@ function resolveFilename() {
     let parentModule = arguments[1];
     request = request.replace(/\\/g, "/");
 
-    if (!installedOnce && parentModule && !request.startsWith(".") && !process.argv.includes("--noinstall")) {
+    if (!installedOnce && parentModule && !request.startsWith(".") && process.argv.includes("--npminstall")) {
         // Probably a module request
 
         // NOTE: The correct way to do this is to concatenate the request with every search path
