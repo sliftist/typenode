@@ -150,14 +150,14 @@ function resolveFilename() {
                 console.log(
                     `Mismatched dependency version for ${request}. Have ${installedVersion}, want ${version}. Required from ${from}`
                 );
-                console.log(`yarn install at ${folder}`);
+                console.log(`npm install at ${folder}`);
 
                 console.log("--------------------------------------------------");
                 console.log("--------------------------------------------------");
                 console.log();
                 console.log();
 
-                child_process.execSync("yarn install", { cwd: folder, stdio: "inherit" });
+                child_process.execSync("npm install", { cwd: folder, stdio: "inherit" });
                 installedOnce = true;
 
                 console.log();
@@ -173,7 +173,7 @@ function resolveFilename() {
 
                 if (!doesVersionMatch(installedVersion, version)) {
                     console.warn(
-                        `Tried to yarn install, but dependency version still out of date for ${JSON.stringify(
+                        `Tried to npm install, but dependency version still out of date for ${JSON.stringify(
                             request
                         )}. Want ${version}, but have ${installedVersion}, required from ${from}`
                     );
