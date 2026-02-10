@@ -18,6 +18,7 @@ export function compileTransform(transform: CompileCallback): void;
 /** @deprecated Call compileTransform2 instead */
 export function compileTransformBefore(transform: CompileCallback): void;
 
+/** Adds handling for extensions (ex, [".cpp"]). */
 export function addAdditionalExtensions(extensions: string[]): void;
 
 declare global {

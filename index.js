@@ -73,6 +73,7 @@ const {
     compileTransformBefore,
     forceTransformModule,
     transformAdditionalExtensions,
+    addAdditionalExtensions,
 } = require("./compileCache");
 
 module.exports = {
@@ -81,4 +82,5 @@ module.exports = {
     compileTransformBefore,
     forceTransformModule,
     transformAdditionalExtensions,
+    addAdditionalExtensions,
 };

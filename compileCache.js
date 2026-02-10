@@ -89,8 +89,17 @@ module.exports.compileTransformBefore = function (transform) {
     });
 };
 module.exports.addAdditionalExtensions = function (extensions) {
+    extensions = extensions.map(x => {
+        if (!x.startsWith(".")) {
+            x = "." + x;
+        }
+        return x;
+    });
     handledExtensions.push(...extensions);
     handledExtensions = [...new Set(handledExtensions)];
+    for (let extension of extensions) {
+        require.extensions[extension] = require.extensions[".js"];
+    }
 };
 module.exports.transformAdditionalExtensions = module.exports.addAdditionalExtensions;
 
@@ -166,7 +175,7 @@ function updateContentsWithContents(module, contents) {
 
             try {
                 cachedContents = atomicRead(cachePath).toString("utf8");
-            } catch {}
+            } catch { }
 
             // If the .ts file contains the hash to begin with, the hash would change,
             //  so this actually shouldn't be able to be wrong without a hash collision.
