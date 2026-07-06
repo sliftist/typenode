@@ -2,6 +2,12 @@
 
 Run TypeScript files directly in Node, no build step.
 
+## Install
+
+```sh
+yarn add typenode
+```
+
 ## Usage
 
 ```sh
