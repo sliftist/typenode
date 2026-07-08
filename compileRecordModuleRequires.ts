@@ -21,17 +21,6 @@ function doCaseFixing() {
 
 const base = Module.prototype.require;
 Module.prototype.require = function (this: NodeJS.Module, request: string) {
-    if (doCaseFixing()) {
-        let lower = request.toLowerCase();
-        let matched = caseFixer.get(lower);
-        if (matched === undefined) {
-            matched = request;
-            caseFixer.set(lower, matched);
-        } else {
-            request = matched;
-        }
-    }
-
     this.requires = this.requires || {};
     this.asyncRequires = this.asyncRequires || {}
     if (this.evalEndTime && !this.requires[request]) {
@@ -43,5 +32,19 @@ Module.prototype.require = function (this: NodeJS.Module, request: string) {
     this.requires[request] = Module._resolveFilename(request, this, false);
 
 
-    return base.call(this, request);
+    if (doCaseFixing()) {
+        let resolved = this.requires[request];
+        let lower = resolved.toLowerCase();
+        let matched = caseFixer.get(lower);
+        if (matched === undefined) {
+            matched = resolved;
+            caseFixer.set(lower, matched);
+        } else {
+            resolved = matched;
+            this.requires[request] = resolved;
+        }
+        return base.call(this, resolved);
+    } else {
+        return base.apply(this, arguments);
+    }
 };
