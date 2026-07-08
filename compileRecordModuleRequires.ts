@@ -43,5 +43,5 @@ Module.prototype.require = function (this: NodeJS.Module, request: string) {
     this.requires[request] = Module._resolveFilename(request, this, false);
 
 
-    return base.apply(this, arguments);
+    return base.call(this, request);
 };
