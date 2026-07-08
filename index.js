@@ -5,6 +5,14 @@ if (existingModule) {
 }
 module.TYPENODE_INSTALL = true;
 
+// HACK: If it's a Windows drive, make sure it uses an uppercase letter. This is how paths will resolve. And if the CWD doesn't have an uppercase letter, it's going to break a lot of things. 
+//  - technically any part of the path might have a case insensitivity issue. However, the drive letter is the safest because it's not on Linux. 
+let cwd = process.cwd();
+if (cwd[1] === ":" && cwd[0].toUpperCase() !== cwd[0]) {
+    let newCwd = cwd[0].toUpperCase() + cwd.slice(1);
+    process.chdir(newCwd);
+}
+
 Symbol.dispose = Symbol.dispose || Symbol("dispose");
 Symbol.asyncDispose = Symbol.asyncDispose || Symbol("asyncDispose");
 
