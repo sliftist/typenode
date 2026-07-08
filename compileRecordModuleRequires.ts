@@ -8,8 +8,30 @@ const Module = eval("require")("module");
 // We need at least 1 export, to force this to be treated like a module
 export const forceModule = true;
 
+const caseFixer = new Map<string, string>();
+declare global {
+    var NO_CASE_FIXING: boolean;
+}
+function doCaseFixing() {
+    if (process.argv.includes("--nofixcase") || globalThis.NO_CASE_FIXING) {
+        return false;
+    }
+    return true;
+}
+
 const base = Module.prototype.require;
 Module.prototype.require = function (this: NodeJS.Module, request: string) {
+    if (doCaseFixing()) {
+        let lower = request.toLowerCase();
+        let matched = caseFixer.get(lower);
+        if (matched === undefined) {
+            matched = request;
+            caseFixer.set(lower, matched);
+        } else {
+            request = matched;
+        }
+    }
+
     this.requires = this.requires || {};
     this.asyncRequires = this.asyncRequires || {}
     if (this.evalEndTime && !this.requires[request]) {
