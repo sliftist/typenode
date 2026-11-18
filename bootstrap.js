@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const THREADPOOL_SIZE = "64";
+
 require("child_process").execFileSync(
     "node",
     [
@@ -10,5 +12,5 @@ require("child_process").execFileSync(
         __dirname + "/index.js",
         ...process.argv.slice(2),
     ],
-    { stdio: "inherit" }
+    { stdio: "inherit", env: { UV_THREADPOOL_SIZE: THREADPOOL_SIZE, ...process.env } }
 );
