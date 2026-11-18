@@ -1,5 +1,3 @@
-console.log("Hello World");
-
 let existingModule = Object.values(require.cache).find((x) => x.TYPENODE_INSTALL);
 if (existingModule) {
     module.exports = existingModule.exports;
